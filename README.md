@@ -13,7 +13,8 @@ python -m pip install -r requirements.txt
 ## Run
 
 ```powershell
-python hr_agent.py
+.\venv\Scripts\python.exe hr_agent.py 
+
 ```
 
 Example questions:
