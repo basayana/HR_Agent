@@ -1,20 +1,40 @@
 Q1. Why is Groq required if you are using an OpenAI model?
 
-gpt-oss-20b is an open model—meaning OpenAI published the raw model file (the weights) 
-for anyone to download and host. OpenAI releases open models, 
-but they do not host all open models on their own paid standard servers.   
+    gpt-oss-20b is an open model—meaning OpenAI published the raw model file (the weights) 
+    for anyone to download and host. OpenAI releases open models, 
+    but they do not host all open models on their own paid standard servers.   
 
-Because the model file is open, you have three ways to run it:
+    Because the model file is open, you have three ways to run it:
 
-                  ┌──► 1. Run on your own GPU (Laptop/Server using Ollama)
-                  │
-[ gpt-oss-20b ] ──┼──► 2. Run on standard Cloud GPUs (AWS / Azure)
- (OpenAI Model)   │
-                  └──► 3. Run on Groq's LPU Cloud (Ultra High Speed)
+                    ┌──► 1. Run on your own GPU (Laptop/Server using Ollama)
+                    │
+    [ gpt-oss-20b ] ┼──► 2. Run on standard Cloud GPUs (AWS / Azure)
+    (OpenAI Model)  │
+                    └──► 3. Run on Groq's LPU Cloud (Ultra High Speed)
 
-You need Groq because:
+    You need Groq because:
 
-Groq is providing the actual computer hardware that loads the gpt-oss-20b file into memory and calculates the response every time your code runs.
+    Groq is providing the actual computer hardware that loads the gpt-oss-20b file into memory and calculates the response every time your code runs.
 
-Extreme speed: Running gpt-oss-20b on Groq's LPU chips generates text significantly faster (often 300+ tokens per second) than running it on standard GPUs.
+    Extreme speed: Running gpt-oss-20b on Groq's LPU chips generates text significantly faster (often 300+ tokens per second) than running it on standard GPUs.
+
+Q2> What is Ollama?
+
+    A: Ollama is an open-source tool and runtime engine that allows you to run, manage, 
+    and interact with open-weights AI models directly on your local computer (laptop, desktop, or server) 
+    without sending data to external cloud services.
+
+    Think of Ollama as a lightweight container system (similar to Docker) designed specifically for 
+    Large Language Models (LLMs). It handles downloading model files, optimizing GPU/RAM usage, 
+    and running local models smoothly behind the scenes.
+
+    Advantages:
+        100% Privacy & Security,
+        Offline Operation
+        Zero Subscription Fees
+        Wide Model Compatibility: Allows you to switch between various open-source models, 
+            including Meta's Llama series, DeepSeek, Google's Gemma, Mistral, and open coding models.
+        Developer Ready: Includes a local REST API endpoint (running on http://localhost:11434) 
+            and CLI tools, making it easy to plug into custom applications, IDE extensions (like VS Code),
+             or third-party web interfaces.
 
