@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Family Tree & Ecosystem Flowchart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        openai: { DEFAULT: '#10b981', glow: 'rgba(16, 185, 129, 0.25)' },
+                        google: { DEFAULT: '#3b82f6', glow: 'rgba(59, 130, 246, 0.25)' },
+                        anthropic: { DEFAULT: '#f59e0b', glow: 'rgba(245, 158, 11, 0.25)' },
+                        meta: { DEFAULT: '#06b6d4', glow: 'rgba(6, 182, 212, 0.25)' },
+                        deepseek: { DEFAULT: '#a855f7', glow: 'rgba(168, 85, 247, 0.25)' },
+                        mistral: { DEFAULT: '#f97316', glow: 'rgba(249, 115, 22, 0.25)' },
+                        xai: { DEFAULT: '#ec4899', glow: 'rgba(236, 72, 153, 0.25)' },
+                        groq: { DEFAULT: '#f43f5e', glow: 'rgba(244, 63, 94, 0.25)' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .node-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .node-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.15);
+        }
+
+        .link-curve {
+            fill: none;
+            stroke-linecap: round;
+            transition: stroke 0.3s ease, stroke-width 0.3s ease, opacity 0.3s ease;
+        }
+
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-100 antialiased select-none">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 border-b border-slate-800/80 glass-panel z-30 px-4 md:px-6 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid font-mono text-lg text-white">𝝀</i>
+            </div>
+            <div>
+                <h1 class="text-base font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                    AI Model Tree Explorer
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">Interactive Diagram</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Explore AI Companies, Model Families, Groq LPUs, and Version Lineages</p>
+            </div>
+        </div>
+
+        <!-- Toolbar controls -->
+        <div class="flex items-center space-x-2 md:space-x-3">
+            <!-- Search Input -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="searchInput" placeholder="Search model (e.g., Groq, Claude 3.5, Gemini)..."
+                       class="w-36 sm:w-64 pl-8 pr-3 py-1.5 text-xs bg-slate-900/90 border border-slate-700/80 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 transition-all">
+            </div>
+
+            <!-- View Switcher -->
+            <div class="bg-slate-900/90 p-1 border border-slate-800 rounded-lg flex items-center text-xs space-x-1">
+                <button id="btnViewHorizontal" class="px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium transition-all flex items-center gap-1.5" title="Horizontal Tree">
+                    <i class="fa-solid fa-sitemap"></i>
+                    <span class="hidden md:inline">Horizontal</span>
+                </button>
+                <button id="btnViewVertical" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5" title="Vertical Tree">
+                    <i class="fa-solid fa-folder-tree"></i>
+                    <span class="hidden md:inline">Vertical</span>
+                </button>
+                <button id="btnViewRadial" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5" title="Radial Map">
+                    <i class="fa-solid fa-[#000]">🎯</i>
+                    <span class="hidden md:inline">Radial</span>
+                </button>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center space-x-1">
+                <button id="btnExpandAll" class="p-2 text-xs bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-lg hover:text-white transition" title="Expand All Nodes">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button id="btnCollapseAll" class="p-2 text-xs bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-lg hover:text-white transition" title="Collapse All Nodes">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+                <button id="btnResetZoom" class="p-2 text-xs bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-lg hover:text-white transition" title="Center Diagram">
+                    <i class="fa-solid fa-crosshairs"></i>
+                </button>
+                <button id="btnCompareModal" class="px-3 py-1.5 text-xs bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/30 hover:text-indigo-200 rounded-lg font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-code-compare"></i>
+                    <span class="hidden sm:inline">Compare</span>
+                    <span id="compareBadge" class="hidden ml-0.5 px-1.5 py-0.2 bg-indigo-500 text-white text-[10px] rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="bg-slate-900/60 border-b border-slate-800/60 px-4 py-2 flex items-center justify-between overflow-x-auto gap-4 text-xs z-20 shrink-0">
+        <div class="flex items-center space-x-2 shrink-0">
+            <span class="text-slate-400 font-medium text-[11px] uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-filter text-indigo-400"></i> Filter Companies:
+            </span>
+            <div class="flex items-center space-x-1.5" id="companyFilterContainer">
+                <!-- Dynamically populated company filters -->
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 shrink-0 border-l border-slate-800 pl-4">
+            <span class="text-slate-400 font-medium text-[11px] uppercase tracking-wider">Features:</span>
+            <button class="filter-tag px-2.5 py-0.5 rounded-full border border-slate-800 bg-slate-900 text-slate-400 hover:border-indigo-500/50 hover:text-slate-200 transition" data-tag="reasoning">
+                🧠 Reasoning / o-series
+            </button>
+            <button class="filter-tag px-2.5 py-0.5 rounded-full border border-slate-800 bg-slate-900 text-slate-400 hover:border-indigo-500/50 hover:text-slate-200 transition" data-tag="open">
+                🔓 Open Weights
+            </button>
+            <button class="filter-tag px-2.5 py-0.5 rounded-full border border-slate-800 bg-slate-900 text-slate-400 hover:border-indigo-500/50 hover:text-slate-200 transition" data-tag="multimodal">
+                👁️ Multimodal / Vision
+            </button>
+            <button class="filter-tag px-2.5 py-0.5 rounded-full border border-slate-800 bg-slate-900 text-slate-400 hover:border-indigo-500/50 hover:text-slate-200 transition" data-tag="fast">
+                ⚡ Lightweight / Fast
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="relative flex-1 flex overflow-hidden">
+        
+        <!-- Canvas Container -->
+        <div id="treeContainer" class="flex-1 h-full w-full relative bg-grid-pattern cursor-grab active:cursor-grabbing overflow-hidden">
+            <svg id="treeSvg" class="w-full h-full block"></svg>
+
+            <!-- Floating Legend / Stats -->
+            <div class="absolute bottom-4 left-4 glass-panel p-3 rounded-xl max-w-xs text-xs pointer-events-auto border border-slate-800 shadow-2xl space-y-2 hidden sm:block">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                    <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-pie text-indigo-400"></i> Diagram Stats
+                    </span>
+                    <span id="statsTotalNodes" class="font-mono text-indigo-400 font-bold text-xs">-- Models</span>
+                </div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-400">
+                    <div class="flex justify-between"><span>Companies:</span> <span id="statCompanies" class="font-mono text-slate-200">8</span></div>
+                    <div class="flex justify-between"><span>Model Families:</span> <span id="statFamilies" class="font-mono text-slate-200">15</span></div>
+                    <div class="flex justify-between"><span>Max Context:</span> <span class="font-mono text-slate-200">2M Tokens</span></div>
+                    <div class="flex justify-between"><span>LPU Speed:</span> <span id="statOpenSource" class="font-mono text-rose-400">300+ T/s</span></div>
+                </div>
+                <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                    <span>💡 Click nodes to inspect & compare</span>
+                    <span>Scroll to zoom</span>
+                </div>
+            </div>
+
+            <!-- Zoom Controls -->
+            <div class="absolute bottom-4 right-4 glass-panel rounded-lg p-1 border border-slate-800 flex flex-col space-y-1 shadow-lg">
+                <button id="btnZoomIn" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800/80 rounded transition">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <button id="btnZoomOut" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800/80 rounded transition">
+                    <i class="fa-solid fa-minus text-xs"></i>
+                </button>
+                <button id="btnFitScreen" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800/80 rounded transition" title="Fit to Screen">
+                    <i class="fa-solid fa-expand text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Model / Node Details Inspector Sidebar -->
+        <div id="inspectorSidebar" class="w-96 glass-panel border-l border-slate-800/80 h-full flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out absolute right-0 top-0 z-30 shadow-2xl">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+                <div class="flex items-center space-x-2.5">
+                    <div id="inspectorBadgeIcon" class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                        <i class="fa-solid fa-cube"></i>
+                    </div>
+                    <div>
+                        <span id="inspectorCategory" class="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-semibold">Model Details</span>
+                        <h3 id="inspectorTitle" class="text-base font-bold text-slate-100 leading-tight">Node Name</h3>
+                    </div>
+                </div>
+                <button id="btnCloseInspector" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Sidebar Content -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
+                
+                <!-- Tag / Badge status -->
+                <div class="flex flex-wrap gap-1.5" id="inspectorTags">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h4 class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Overview & Architecture</h4>
+                    <p id="inspectorDesc" class="text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-800/80">
+                        Select a node in the tree diagram to inspect its specifications, release timeline, parameter count, and benchmark details.
+                    </p>
+                </div>
+
+                <!-- Specs Grid -->
+                <div id="inspectorSpecsGroup" class="space-y-2">
+                    <h4 class="text-slate-400 font-medium text-[11px] uppercase tracking-wider">Technical Specifications</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-slate-500 text-[10px]">Release Date</div>
+                            <div id="inspectorReleaseDate" class="font-mono text-slate-200 font-medium mt-0.5">--</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-slate-500 text-[10px]">Context Window</div>
+                            <div id="inspectorContext" class="font-mono text-indigo-300 font-bold mt-0.5">--</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-slate-500 text-[10px]">Parameter Count</div>
+                            <div id="inspectorParams" class="font-mono text-slate-200 font-medium mt-0.5">--</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-slate-500 text-[10px]">License / Access</div>
+                            <div id="inspectorLicense" class="font-mono text-slate-200 font-medium mt-0.5">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Strengths & Capabilities -->
+                <div id="inspectorKeyCapabilities">
+                    <h4 class="text-slate-400 font-medium mb-2 text-[11px] uppercase tracking-wider">Key Strengths & Features</h4>
+                    <ul id="inspectorFeaturesList" class="space-y-1.5 text-slate-300">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Children / Variants Sub-list -->
+                <div id="inspectorChildrenGroup" class="pt-2 border-t border-slate-800">
+                    <h4 class="text-slate-400 font-medium mb-2 text-[11px] uppercase tracking-wider" id="inspectorChildrenTitle">Sub-Models & Versions</h4>
+                    <div id="inspectorChildrenList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Inspector Footer Actions -->
+            <div class="p-4 border-t border-slate-800 bg-slate-900/90 flex gap-2">
+                <button id="btnAddToCompare" class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20">
+                    <i class="fa-solid fa-circle-plus"></i> Add to Comparison
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Comparison Modal -->
+    <div id="compareModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                        <i class="fa-solid fa-code-compare text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Model Side-by-Side Comparison</h2>
+                        <p class="text-xs text-slate-400">Compare parameter counts, context limits, strengths and specs across models</p>
+                    </div>
+                </div>
+                <button id="btnCloseCompareModal" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-x-auto overflow-y-auto p-6" id="compareContentArea">
+                <!-- Dynamically rendered comparison grid -->
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between text-xs">
+                <button id="btnClearCompare" class="px-3 py-1.5 text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i> Clear Selection
+                </button>
+                <div class="text-slate-500">
+                    Select models from the diagram by clicking "Add to Comparison"
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const aiTreeData = {
+            id: "root",
+            name: "AI Ecosystem",
+            type: "root",
+            desc: "Global Landscape of Leading Frontier AI Organizations & LLM Architectures",
+            children: [
+                {
+                    id: "groq",
+                    name: "Groq (LPU Platform)",
+                    type: "company",
+                    color: "#f43f5e",
+                    icon: "fa-microchip",
+                    desc: "Pioneer in AI hardware acceleration using Language Processing Units (LPUs) for ultra-fast low-latency LLM inference.",
+                    children: [
+                        {
+                            id: "groq_lpu",
+                            name: "GroqCloud / LPU Engine",
+                            type: "family",
+                            color: "#f43f5e",
+                            desc: "Custom deterministic Tensor Streaming Processor hardware optimized for high token throughput.",
+                            children: [
+                                {
+                                    id: "groq_llama_33",
+                                    name: "Llama 3.3 70B (Groq LPU)",
+                                    type: "model",
+                                    color: "#f43f5e",
+                                    release: "Hosted",
+                                    context: "128K tokens",
+                                    params: "70B (Ultra-Fast)",
+                                    access: "GroqCloud API",
+                                    tags: ["fast", "open"],
+                                    desc: "Meta's Llama 3.3 70B hosted on Groq LPUs delivering 300+ tokens per second generation speed.",
+                                    strengths: ["Ultra-low latency (<100ms TTFT)", "Realtime speech & agentic pipelines", "Cost-effective API inference"]
+                                },
+                                {
+                                    id: "groq_deepseek_r1",
+                                    name: "DeepSeek-R1 (Groq LPU)",
+                                    type: "model",
+                                    color: "#f43f5e",
+                                    release: "Hosted",
+                                    context: "128K tokens",
+                                    params: "671B (LPU Speculative)",
+                                    access: "GroqCloud API",
+                                    tags: ["fast", "reasoning"],
+                                    desc: "DeepSeek-R1 reasoning model running on Groq LPU cluster for rapid thinking chain generation.",
+                                    strengths: ["Rapid Chain-of-Thought streaming", "High throughput reasoning", "Optimized open weights deployment"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "openai",
+                    name: "OpenAI",
+                    type: "company",
+                    color: "#10b981",
+                    icon: "fa-robot",
+                    desc: "Pioneer in generative pre-trained transformers and reasoning architectures.",
+                    children: [
+                        {
+                            id: "gpt_series",
+                            name: "GPT / ChatGPT Series",
+                            type: "family",
+                            color: "#10b981",
+                            desc: "Generative Pre-trained Transformer baseline LLMs power ChatGPT.",
+                            children: [
+                                {
+                                    id: "gpt35",
+                                    name: "GPT-3.5 Turbo",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "Mar 2023",
+                                    context: "16K tokens",
+                                    params: "175B (est.)",
+                                    access: "Proprietary",
+                                    tags: ["fast"],
+                                    desc: "Workhorse model that powered early ChatGPT popularity with low latency and cost-effective text generation.",
+                                    strengths: ["Fast response generation", "Highly cost-effective API", "General text completion & formatting"]
+                                },
+                                {
+                                    id: "gpt4",
+                                    name: "GPT-4",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "Mar 2023",
+                                    context: "32K tokens",
+                                    params: "1.8T (MoE)",
+                                    access: "Proprietary",
+                                    tags: ["reasoning"],
+                                    desc: "Milestone multimodal flagship model showcasing human-level performance on academic benchmarks.",
+                                    strengths: ["High reasoning accuracy", "Strong multi-step instruction following", "Reliable code synthesis"]
+                                },
+                                {
+                                    id: "gpt4o",
+                                    name: "GPT-4o (Omni)",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "May 2024",
+                                    context: "128K tokens",
+                                    params: "Undisclosed",
+                                    access: "Proprietary",
+                                    tags: ["multimodal", "fast"],
+                                    desc: "Native multimodal flagship processing audio, vision, and text concurrently in real-time.",
+                                    strengths: ["Native cross-modal audio/vision", "2x faster than GPT-4 Turbo", "Advanced vision understanding"]
+                                },
+                                {
+                                    id: "gpt4o_mini",
+                                    name: "GPT-4o mini",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "Jul 2024",
+                                    context: "128K tokens",
+                                    params: "Undisclosed",
+                                    access: "Proprietary",
+                                    tags: ["fast", "multimodal"],
+                                    desc: "Highly efficient small multimodal model replacing GPT-3.5 Turbo for budget-constrained tasks.",
+                                    strengths: ["Extremely low API pricing", "Outperforms GPT-3.5", "Vision & function calling built-in"]
+                                }
+                            ]
+                        },
+                        {
+                            id: "o_series",
+                            name: "o-Series (Reasoning)",
+                            type: "family",
+                            color: "#10b981",
+                            desc: "Chain-of-thought specialized reasoning models using reinforcement learning.",
+                            children: [
+                                {
+                                    id: "o1_preview",
+                                    name: "o1-preview",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "Sep 2024",
+                                    context: "128K tokens",
+                                    params: "Undisclosed",
+                                    access: "Proprietary",
+                                    tags: ["reasoning"],
+                                    desc: "Early release of reasoning model spent training extra compute on thinking before answering.",
+                                    strengths: ["PhD-level math & science", "Complex problem breakdown", "Iterative self-correction"]
+                                },
+                                {
+                                    id: "o1",
+                                    name: "o1 (Full)",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "Dec 2024",
+                                    context: "200K tokens",
+                                    params: "Undisclosed",
+                                    access: "Proprietary",
+                                    tags: ["reasoning", "multimodal"],
+                                    desc: "Full production reasoning model with vision understanding and enhanced STEM accuracy.",
+                                    strengths: ["Competitive programming prowess", "Advanced image reasoning", "Deep scientific literature synthesis"]
+                                },
+                                {
+                                    id: "o3_mini",
+                                    name: "o3-mini",
+                                    type: "model",
+                                    color: "#10b981",
+                                    release: "Jan 2025",
+                                    context: "200K tokens",
+                                    params: "Undisclosed",
+                                    access: "Proprietary",
+                                    tags: ["reasoning", "fast"],
+                                    desc: "Compact reasoning model with adjustable thinking effort (low, medium, high).",
+                                    strengths: ["Sub-second fast reasoning option", "Exceptional code debugging", "Highly cost-efficient reasoning"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "google",
+                    name: "Google DeepMind",
+                    type: "company",
+                    color: "#3b82f6",
+                    icon: "fa-brands fa-google",
+                    desc: "Leader in native multimodal architecture and long-context processing.",
+                    children: [
+                        {
+                            id: "gemini_series",
+                            name: "Gemini Series",
+                            type: "family",
+                            color: "#3b82f6",
+                            desc: "Built from ground up to be natively multimodal across text, code, audio, image, and video.",
+                            children: [
+                                {
+                                    id: "gemini_15_pro",
+                                    name: "Gemini 1.5 Pro",
+                                    type: "model",
+                                    color: "#3b82f6",
+                                    release: "Feb 2024",
+                                    context: "2,000,000 tokens",
+                                    params: "MoE Architecture",
+                                    access: "Proprietary",
+                                    tags: ["multimodal"],
+                                    desc: "Breakthrough model featuring an unprecedented 2M token context window.",
+                                    strengths: ["2M token context window", "In-context video/audio analysis", "Needle-in-a-haystack accuracy"]
+                                },
+                                {
+                                    id: "gemini_20_flash",
+                                    name: "Gemini 2.0 Flash",
+                                    type: "model",
+                                    color: "#3b82f6",
+                                    release: "Dec 2024",
+                                    context: "1,000,000 tokens",
+                                    params: "Next-gen MoE",
+                                    access: "Proprietary",
+                                    tags: ["fast", "multimodal", "reasoning"],
+                                    desc: "Next generation agentic intelligence model with realtime audio/video streaming & built-in tool calling.",
+                                    strengths: ["Realtime audio/visual streaming", "Native tool usage & search grounding", "2x speed of 1.5 Flash"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "anthropic",
+                    name: "Anthropic",
+                    type: "company",
+                    color: "#f59e0b",
+                    icon: "fa-brain",
+                    desc: "AI safety research company focused on Constitutional AI and helpful steerable assistants.",
+                    children: [
+                        {
+                            id: "claude_35",
+                            name: "Claude 3.5 Generation",
+                            type: "family",
+                            color: "#f59e0b",
+                            desc: "Flagship series introducing Computer Use and industry-leading coding benchmark performance.",
+                            children: [
+                                {
+                                    id: "claude_35_sonnet",
+                                    name: "Claude 3.5 Sonnet",
+                                    type: "model",
+                                    color: "#f59e0b",
+                                    release: "Oct 2024 (v2)",
+                                    context: "200K tokens",
+                                    params: "Undisclosed",
+                                    access: "Proprietary",
+                                    tags: ["reasoning", "multimodal"],
+                                    desc: "Premier model for developer coding, instruction following, and automated Computer Use UI navigation.",
+                                    strengths: ["World-class coding capability", "GUI Computer Use interaction", "Artifacts rendering support"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "meta",
+                    name: "Meta AI",
+                    type: "company",
+                    color: "#06b6d4",
+                    icon: "fa-brands fa-meta",
+                    desc: "Champion of open-weights AI model distribution and large scale open science.",
+                    children: [
+                        {
+                            id: "llama_33",
+                            name: "Llama 3.3 Series",
+                            type: "family",
+                            color: "#06b6d4",
+                            desc: "State-of-the-art open weights 70B parameter footprint matching frontier capabilities.",
+                            children: [
+                                {
+                                    id: "llama_33_70b",
+                                    name: "Llama 3.3 70B",
+                                    type: "model",
+                                    color: "#06b6d4",
+                                    release: "Dec 2024",
+                                    context: "128K tokens",
+                                    params: "70 Billion",
+                                    access: "Open Weights",
+                                    tags: ["open", "reasoning"],
+                                    desc: "Matches capabilities of original 405B model in a far more accessible 70B parameter footprint.",
+                                    strengths: ["405B level quality at 70B size", "Extremely efficient inference", "Fine-tuning favorite"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "deepseek",
+                    name: "DeepSeek",
+                    type: "company",
+                    color: "#a855f7",
+                    icon: "fa-bolt-lightning",
+                    desc: "High-efficiency open research lab pushing Mixture-of-Experts and RL reasoning efficiency.",
+                    children: [
+                        {
+                            id: "deepseek_r_series",
+                            name: "DeepSeek-R Series (Reasoning)",
+                            type: "family",
+                            color: "#a855f7",
+                            desc: "Pure reinforcement learning reasoning models generating detailed CoT logs.",
+                            children: [
+                                {
+                                    id: "deepseek_r1",
+                                    name: "DeepSeek-R1",
+                                    type: "model",
+                                    color: "#a855f7",
+                                    release: "Jan 2025",
+                                    context: "128K tokens",
+                                    params: "671B (37B active)",
+                                    access: "Open Weights",
+                                    tags: ["open", "reasoning"],
+                                    desc: "Open reasoning model rivaling OpenAI o1 with visible reasoning process chains.",
+                                    strengths: ["Open-weights reasoning CoT", "Math & AIME competitive benchmark leader", "Distilled sub-models (1.5B-70B)"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "mistral",
+                    name: "Mistral AI",
+                    type: "company",
+                    color: "#f97316",
+                    icon: "fa-wind",
+                    desc: "European AI champion focused on efficient Mixture-of-Experts and open weights.",
+                    children: [
+                        {
+                            id: "mistral_commercial",
+                            name: "Mistral Commercial",
+                            type: "family",
+                            color: "#f97316",
+                            desc: "Enterprise frontier models hosted on cloud infrastructure.",
+                            children: [
+                                {
+                                    id: "mistral_large_2",
+                                    name: "Mistral Large 2",
+                                    type: "model",
+                                    color: "#f97316",
+                                    release: "Jul 2024",
+                                    context: "128K tokens",
+                                    params: "123B",
+                                    access: "Proprietary / Research",
+                                    tags: ["reasoning"],
+                                    desc: "Flagship enterprise model with high multilingual competency and precise function calling.",
+                                    strengths: ["80+ programming languages", "Advanced instruction following", "Multilingual translation"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "xai",
+                    name: "xAI",
+                    type: "company",
+                    color: "#ec4899",
+                    icon: "fa-atom",
+                    desc: "AI research organization focusing on understanding the universe with real-time X platform data.",
+                    children: [
+                        {
+                            id: "grok_series",
+                            name: "Grok Family",
+                            type: "family",
+                            color: "#ec4899",
+                            desc: "Real-time web connected models with conversational wit and reasoning.",
+                            children: [
+                                {
+                                    id: "grok_3",
+                                    name: "Grok 3 (Preview)",
+                                    type: "model",
+                                    color: "#ec4899",
+                                    release: "Feb 2025",
+                                    context: "128K tokens",
+                                    params: "Colossus Trained",
+                                    access: "Proprietary",
+                                    tags: ["reasoning"],
+                                    desc: "Trained on massive 100k GPU Colossus cluster with advanced math/reasoning mode.",
+                                    strengths: ["Colossus scale compute baseline", "Advanced thinking mode", "Deep technical analysis"]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        let activeView = 'horizontal'; 
+        let selectedCompanies = new Set();
+        let selectedTags = new Set();
+        let searchQuery = '';
+        let selectedNodeForInspector = null;
+        let compareList = new Set();
+
+        let svg, gContainer, zoomBehavior;
+        let rootHierarchy = null;
+
+        function getNodeColor(d) {
+            let curr = d;
+            while (curr) {
+                if (curr.data.color) return curr.data.color;
+                curr = curr.parent;
+            }
+            return "#6366f1";
+        }
+
+        function initFilters() {
+            const container = document.getElementById('companyFilterContainer');
+            const companies = aiTreeData.children;
+
+            companies.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `px-2.5 py-0.5 rounded-full border text-xs font-medium transition flex items-center gap-1.5 border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-600`;
+                btn.dataset.companyId = c.id;
+                btn.innerHTML = `<span class="w-2 h-2 rounded-full" style="background-color:${c.color}"></span> ${c.name}`;
+                
+                btn.addEventListener('click', () => {
+                    if (selectedCompanies.has(c.id)) {
+                        selectedCompanies.delete(c.id);
+                        btn.classList.remove('border-indigo-500', 'bg-indigo-950/40', 'text-indigo-200');
+                        btn.classList.add('border-slate-800', 'bg-slate-900/80', 'text-slate-300');
+                    } else {
+                        selectedCompanies.add(c.id);
+                        btn.classList.add('border-indigo-500', 'bg-indigo-950/40', 'text-indigo-200');
+                        btn.classList.remove('border-slate-800', 'bg-slate-900/80', 'text-slate-300');
+                    }
+                    renderTree();
+                });
+
+                container.appendChild(btn);
+            });
+
+            document.querySelectorAll('.filter-tag').forEach(tagBtn => {
+                tagBtn.addEventListener('click', () => {
+                    const tag = tagBtn.dataset.tag;
+                    if (selectedTags.has(tag)) {
+                        selectedTags.delete(tag);
+                        tagBtn.classList.remove('border-indigo-500', 'bg-indigo-600/20', 'text-indigo-200');
+                        tagBtn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
+                    } else {
+                        selectedTags.add(tag);
+                        tagBtn.classList.add('border-indigo-500', 'bg-indigo-600/20', 'text-indigo-200');
+                        tagBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+                    }
+                    renderTree();
+                });
+            });
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchQuery = e.target.value.trim().toLowerCase();
+                renderTree();
+            });
+        }
+
+        function initSvg() {
+            const container = document.getElementById('treeContainer');
+            svg = d3.select("#treeSvg");
+
+            gContainer = svg.append("g").attr("class", "main-group");
+
+            zoomBehavior = d3.zoom()
+                .scaleExtent([0.15, 2.5])
+                .on("zoom", (event) => {
+                    gContainer.attr("transform", event.transform);
+                });
+
+            svg.call(zoomBehavior);
+            svg.on("dblclick.zoom", null);
+
+            window.addEventListener('resize', () => {
+                if (rootHierarchy) renderTree();
+            });
+        }
+
+        function renderTree() {
+            if (!rootHierarchy) {
+                rootHierarchy = d3.hierarchy(aiTreeData);
+                rootHierarchy.descendants().forEach((d, i) => {
+                    d._id = i;
+                    d._children = d.children;
+                });
+            }
+
+            const container = document.getElementById('treeContainer');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            gContainer.selectAll("*").remove();
+
+            const filteredData = filterDataStructure(aiTreeData);
+            if (!filteredData) {
+                gContainer.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height / 2)
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "#94a3b8")
+                    .attr("font-size", "14px")
+                    .text("No models match current search/filter parameters.");
+                return;
+            }
+
+            const root = d3.hierarchy(filteredData);
+
+            let modelCount = 0;
+            root.descendants().forEach(d => {
+                if (d.data.type === 'model') modelCount++;
+            });
+            document.getElementById('statsTotalNodes').innerText = `${modelCount} Active Models`;
+
+            if (activeView === 'horizontal') {
+                renderHorizontalTree(root, width, height);
+            } else if (activeView === 'vertical') {
+                renderVerticalTree(root, width, height);
+            } else if (activeView === 'radial') {
+                renderRadialTree(root, width, height);
+            }
+        }
+
+        function filterDataStructure(node) {
+            if (node.type === 'company' && selectedCompanies.size > 0 && !selectedCompanies.has(node.id)) {
+                return null;
+            }
+
+            let copy = { ...node };
+
+            if (node.children && node.children.length > 0) {
+                let filteredChildren = node.children
+                    .map(child => filterDataStructure(child))
+                    .filter(child => child !== null);
+
+                if (filteredChildren.length === 0 && node.type !== 'root') {
+                    const nameMatch = searchQuery && node.name.toLowerCase().includes(searchQuery);
+                    if (!nameMatch && searchQuery) return null;
+                }
+                copy.children = filteredChildren;
+            } else {
+                if (searchQuery) {
+                    const nameMatch = node.name.toLowerCase().includes(searchQuery);
+                    const descMatch = node.desc && node.desc.toLowerCase().includes(searchQuery);
+                    const paramMatch = node.params && node.params.toLowerCase().includes(searchQuery);
+                    if (!nameMatch && !descMatch && !paramMatch) return null;
+                }
+
+                if (selectedTags.size > 0 && node.tags) {
+                    const hasTag = Array.from(selectedTags).some(t => node.tags.includes(t));
+                    if (!hasTag) return null;
+                } else if (selectedTags.size > 0 && !node.tags) {
+                    return null;
+                }
+            }
+
+            return copy;
+        }
+
+        function renderHorizontalTree(root, width, height) {
+            const treeLayout = d3.tree()
+                .nodeSize([65, 260])
+                .separation((a, b) => (a.parent === b.parent ? 1.2 : 1.6));
+
+            treeLayout(root);
+
+            const x0 = 80;
+            const y0 = height / 2;
+
+            const linkGen = d3.linkHorizontal()
+                .x(d => d.y)
+                .y(d => d.x);
+
+            gContainer.selectAll('.link-curve')
+                .data(root.links())
+                .enter()
+                .append('path')
+                .attr('class', 'link-curve')
+                .attr('d', linkGen)
+                .attr('stroke', d => getNodeColor(d.target))
+                .attr('stroke-width', 2)
+                .attr('stroke-opacity', 0.35);
+
+            const nodes = gContainer.selectAll('.node-group')
+                .data(root.descendants())
+                .enter()
+                .append('g')
+                .attr('class', 'node-group node-card')
+                .attr('transform', d => `translate(${d.y},${d.x})`)
+                .on('click', (event, d) => handleNodeClick(d));
+
+            nodes.each(function(d) {
+                const el = d3.select(this);
+                const color = getNodeColor(d);
+
+                if (d.data.type === 'root') {
+                    el.append('circle')
+                        .attr('r', 24)
+                        .attr('fill', '#0f172a')
+                        .attr('stroke', '#6366f1')
+                        .attr('stroke-width', 3);
+                    
+                    el.append('text')
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', '0.35em')
+                        .attr('fill', '#ffffff')
+                        .attr('font-weight', 'bold')
+                        .attr('font-size', '11px')
+                        .text('AI TREE');
+                } else if (d.data.type === 'company') {
+                    el.append('rect')
+                        .attr('x', -10)
+                        .attr('y', -22)
+                        .attr('width', 180)
+                        .attr('height', 44)
+                        .attr('rx', 12)
+                        .attr('fill', '#0f172a')
+                        .attr('stroke', color)
+                        .attr('stroke-width', 2)
+                        .style('filter', `drop-shadow(0 0 10px ${color}33)`);
+
+                    el.append('circle')
+                        .attr('cx', 12)
+                        .attr('cy', 0)
+                        .attr('r', 12)
+                        .attr('fill', color)
+                        .attr('fill-opacity', 0.2);
+
+                    el.append('text')
+                        .attr('x', 32)
+                        .attr('y', 4)
+                        .attr('fill', '#ffffff')
+                        .attr('font-weight', 'bold')
+                        .attr('font-size', '13px')
+                        .text(d.data.name);
+
+                } else if (d.data.type === 'family') {
+                    el.append('rect')
+                        .attr('x', -8)
+                        .attr('y', -18)
+                        .attr('width', 170)
+                        .attr('height', 36)
+                        .attr('rx', 10)
+                        .attr('fill', '#1e293b')
+                        .attr('stroke', color)
+                        .attr('stroke-width', 1.5)
+                        .attr('stroke-dasharray', '3,3');
+
+                    el.append('text')
+                        .attr('x', 10)
+                        .attr('y', 3)
+                        .attr('fill', '#e2e8f0')
+                        .attr('font-weight', '600')
+                        .attr('font-size', '11px')
+                        .text(d.data.name);
+
+                } else {
+                    const width = 210;
+                    const height = 52;
+                    
+                    el.append('rect')
+                        .attr('x', 0)
+                        .attr('y', -height/2)
+                        .attr('width', width)
+                        .attr('height', height)
+                        .attr('rx', 10)
+                        .attr('fill', '#090d16')
+                        .attr('stroke', color)
+                        .attr('stroke-width', 1.5);
+
+                    el.append('text')
+                        .attr('x', 12)
+                        .attr('y', -6)
+                        .attr('fill', '#f8fafc')
+                        .attr('font-weight', '700')
+                        .attr('font-size', '11px')
+                        .text(d.data.name);
+
+                    const specs = `${d.data.params || 'Standard'} • ${d.data.context || ''}`;
+                    el.append('text')
+                        .attr('x', 12)
+                        .attr('y', 12)
+                        .attr('fill', '#94a3b8')
+                        .attr('font-size', '9.5px')
+                        .attr('font-family', 'JetBrains Mono, monospace')
+                        .text(specs.substring(0, 32));
+
+                    const isGroq = d.data.access === 'GroqCloud API';
+                    const isOp = d.data.access === 'Open Weights';
+                    
+                    el.append('rect')
+                        .attr('x', 12)
+                        .attr('y', 18)
+                        .attr('width', isGroq ? 75 : (isOp ? 62 : 60))
+                        .attr('height', 13)
+                        .attr('rx', 4)
+                        .attr('fill', isGroq ? 'rgba(244, 63, 94, 0.15)' : (isOp ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.15)'));
+
+                    el.append('text')
+                        .attr('x', 16)
+                        .attr('y', 27)
+                        .attr('fill', isGroq ? '#fb7185' : (isOp ? '#34d399' : '#818cf8'))
+                        .attr('font-size', '8px')
+                        .attr('font-weight', 'bold')
+                        .text(isGroq ? 'GROQ ACCELERATED' : (isOp ? 'OPEN WEIGHTS' : 'PROPRIETARY'));
+                }
+            });
+
+            svg.transition().duration(500).call(
+                zoomBehavior.transform,
+                d3.zoomIdentity.translate(x0, y0).scale(0.85)
+            );
+        }
+
+        function renderVerticalTree(root, width, height) {
+            const treeLayout = d3.tree()
+                .nodeSize([190, 110])
+                .separation((a, b) => (a.parent === b.parent ? 1.1 : 1.4));
+
+            treeLayout(root);
+
+            const linkGen = d3.linkVertical()
+                .x(d => d.x)
+                .y(d => d.y);
+
+            gContainer.selectAll('.link-curve')
+                .data(root.links())
+                .enter()
+                .append('path')
+                .attr('class', 'link-curve')
+                .attr('d', linkGen)
+                .attr('stroke', d => getNodeColor(d.target))
+                .attr('stroke-width', 2)
+                .attr('stroke-opacity', 0.35);
+
+            const nodes = gContainer.selectAll('.node-group')
+                .data(root.descendants())
+                .enter()
+                .append('g')
+                .attr('class', 'node-group node-card')
+                .attr('transform', d => `translate(${d.x},${d.y})`)
+                .on('click', (event, d) => handleNodeClick(d));
+
+            nodes.each(function(d) {
+                const el = d3.select(this);
+                const color = getNodeColor(d);
+
+                el.append('rect')
+                    .attr('x', -80)
+                    .attr('y', -20)
+                    .attr('width', 160)
+                    .attr('height', 40)
+                    .attr('rx', 10)
+                    .attr('fill', '#0f172a')
+                    .attr('stroke', color)
+                    .attr('stroke-width', 1.5);
+
+                el.append('text')
+                    .attr('x', 0)
+                    .attr('y', -2)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#ffffff')
+                    .attr('font-weight', 'bold')
+                    .attr('font-size', '11px')
+                    .text(d.data.name.length > 22 ? d.data.name.substring(0, 20) + '...' : d.data.name);
+
+                el.append('text')
+                    .attr('x', 0)
+                    .attr('y', 12)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#94a3b8')
+                    .attr('font-size', '9px')
+                    .text(d.data.type.toUpperCase());
+            });
+
+            svg.transition().duration(500).call(
+                zoomBehavior.transform,
+                d3.zoomIdentity.translate(width / 2, 80).scale(0.8)
+            );
+        }
+
+        function renderRadialTree(root, width, height) {
+            const radius = Math.min(width, height) / 2 - 100;
+            const treeLayout = d3.tree()
+                .size([2 * Math.PI, radius])
+                .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+
+            treeLayout(root);
+
+            gContainer.attr('transform', `translate(${width/2},${height/2})`);
+
+            gContainer.selectAll('.link-curve')
+                .data(root.links())
+                .enter()
+                .append('path')
+                .attr('class', 'link-curve')
+                .attr('d', d3.linkRadial()
+                    .angle(d => d.x)
+                    .radius(d => d.y))
+                .attr('stroke', d => getNodeColor(d.target))
+                .attr('stroke-width', 1.5)
+                .attr('stroke-opacity', 0.4);
+
+            const nodes = gContainer.selectAll('.node-group')
+                .data(root.descendants())
+                .enter()
+                .append('g')
+                .attr('class', 'node-group node-card')
+                .attr('transform', d => `
+                    rotate(${d.x * 180 / Math.PI - 90})
+                    translate(${d.y},0)
+                `)
+                .on('click', (event, d) => handleNodeClick(d));
+
+            nodes.append('circle')
+                .attr('r', d => d.data.type === 'company' ? 8 : (d.data.type === 'family' ? 6 : 4))
+                .attr('fill', d => getNodeColor(d))
+                .attr('stroke', '#ffffff')
+                .attr('stroke-width', 1);
+
+            nodes.append('text')
+                .attr('dy', '0.31em')
+                .attr('x', d => d.x < Math.PI === !d.children ? 8 : -8)
+                .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
+                .attr('transform', d => d.x >= Math.PI ? 'rotate(180)' : null)
+                .attr('fill', '#e2e8f0')
+                .attr('font-size', '10px')
+                .attr('font-weight', '600')
+                .text(d => d.data.name);
+
+            svg.transition().duration(500).call(
+                zoomBehavior.transform,
+                d3.zoomIdentity.scale(0.9)
+            );
+        }
+
+        function handleNodeClick(d) {
+            selectedNodeForInspector = d.data;
+            const sidebar = document.getElementById('inspectorSidebar');
+            sidebar.classList.remove('translate-x-full');
+
+            document.getElementById('inspectorTitle').innerText = d.data.name;
+            document.getElementById('inspectorCategory').innerText = `${d.data.type.toUpperCase()} SPECIFICATION`;
+            document.getElementById('inspectorDesc').innerText = d.data.desc || "No description available.";
+
+            document.getElementById('inspectorReleaseDate').innerText = d.data.release || "N/A";
+            document.getElementById('inspectorContext').innerText = d.data.context || "N/A";
+            document.getElementById('inspectorParams').innerText = d.data.params || "Undisclosed";
+            document.getElementById('inspectorLicense').innerText = d.data.access || "N/A";
+
+            const listContainer = document.getElementById('inspectorFeaturesList');
+            listContainer.innerHTML = '';
+            if (d.data.strengths && d.data.strengths.length > 0) {
+                d.data.strengths.forEach(st => {
+                    const li = document.createElement('li');
+                    li.className = "flex items-start gap-2 text-slate-300";
+                    li.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-[11px] mt-0.5"></i> <span>${st}</span>`;
+                    listContainer.appendChild(li);
+                });
+            } else {
+                listContainer.innerHTML = `<span class="text-slate-500 italic">No explicit benchmark highlights listed.</span>`;
+            }
+
+            const childrenGroup = document.getElementById('inspectorChildrenGroup');
+            const childrenList = document.getElementById('inspectorChildrenList');
+            const childrenTitle = document.getElementById('inspectorChildrenTitle');
+            childrenList.innerHTML = '';
+
+            const subNodes = d.data.children || d.data._children;
+            if (subNodes && subNodes.length > 0) {
+                childrenGroup.classList.remove('hidden');
+                childrenTitle.innerText = `Sub-Models & Versions (${subNodes.length})`;
+                subNodes.forEach(sub => {
+                    const item = document.createElement('div');
+                    item.className = "p-2 rounded-lg bg-slate-900/80 border border-slate-800 flex justify-between items-center text-xs";
+                    item.innerHTML = `
+                        <span class="font-semibold text-slate-200">${sub.name}</span>
+                        <span class="font-mono text-[10px] text-indigo-400">${sub.release || ''}</span>
+                    `;
+                    childrenList.appendChild(item);
+                });
+            } else {
+                childrenGroup.classList.add('hidden');
+            }
+
+            const tagsContainer = document.getElementById('inspectorTags');
+            tagsContainer.innerHTML = '';
+            if (d.data.tags) {
+                d.data.tags.forEach(t => {
+                    const badge = document.createElement('span');
+                    badge.className = "px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px] uppercase font-mono font-bold";
+                    badge.innerText = t;
+                    tagsContainer.appendChild(badge);
+                });
+            }
+        }
+
+        function initComparison() {
+            const btnAdd = document.getElementById('btnAddToCompare');
+
+            btnAdd.addEventListener('click', () => {
+                if (!selectedNodeForInspector) return;
+                compareList.add(selectedNodeForInspector);
+                updateCompareBadge();
+
+                btnAdd.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> Added to Compare!`;
+                setTimeout(() => {
+                    btnAdd.innerHTML = `<i class="fa-solid fa-circle-plus"></i> Add to Comparison`;
+                }, 1500);
+            });
+
+            document.getElementById('btnCompareModal').addEventListener('click', openCompareModal);
+            document.getElementById('btnCloseCompareModal').addEventListener('click', closeCompareModal);
+            document.getElementById('btnClearCompare').addEventListener('click', () => {
+                compareList.clear();
+                updateCompareBadge();
+                renderComparisonGrid();
+            });
+        }
+
+        function updateCompareBadge() {
+            const badge = document.getElementById('compareBadge');
+            if (compareList.size > 0) {
+                badge.classList.remove('hidden');
+                badge.innerText = compareList.size;
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function openCompareModal() {
+            const modal = document.getElementById('compareModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            renderComparisonGrid();
+        }
+
+        function closeCompareModal() {
+            const modal = document.getElementById('compareModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function renderComparisonGrid() {
+            const container = document.getElementById('compareContentArea');
+            if (compareList.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500">
+                        <i class="fa-solid fa-code-compare text-4xl mb-3 block text-slate-600"></i>
+                        <p class="text-sm font-medium">No models selected for side-by-side comparison yet.</p>
+                        <p class="text-xs mt-1">Click on any model node in the tree flowchart and click <b>"Add to Comparison"</b>.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const items = Array.from(compareList);
+            let html = `<div class="grid grid-cols-${Math.min(items.length, 4)} gap-4 min-w-[600px]">`;
+
+            items.forEach(item => {
+                html += `
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[10px] font-mono text-indigo-400 uppercase font-bold">${item.type}</span>
+                                <button onclick="removeFromCompare('${item.id}')" class="text-slate-500 hover:text-rose-400 text-xs">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <h3 class="text-base font-bold text-white mb-1">${item.name}</h3>
+                            <p class="text-xs text-slate-400 line-clamp-3 mb-3">${item.desc || ''}</p>
+
+                            <div class="space-y-2 border-t border-slate-800 pt-3 text-xs">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Release:</span>
+                                    <span class="font-mono text-slate-200">${item.release || 'N/A'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Context Window:</span>
+                                    <span class="font-mono text-indigo-300 font-bold">${item.context || 'N/A'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Parameters:</span>
+                                    <span class="font-mono text-slate-200">${item.params || 'N/A'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Access Type:</span>
+                                    <span class="font-mono text-rose-400 font-semibold">${item.access || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-3">
+                            <span class="text-[10px] uppercase font-mono text-slate-500 block mb-1">Key Strengths</span>
+                            <ul class="text-[11px] space-y-1 text-slate-300">
+                                ${(item.strengths || []).map(s => `<li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-indigo-400 text-[10px]"></i> ${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function removeFromCompare(id) {
+            for (let item of compareList) {
+                if (item.id === id) {
+                    compareList.delete(item);
+                    break;
+                }
+            }
+            updateCompareBadge();
+            renderComparisonGrid();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSvg();
+            initFilters();
+            initComparison();
+            renderTree();
+
+            document.getElementById('btnViewHorizontal').addEventListener('click', function() {
+                activeView = 'horizontal';
+                updateViewButtons(this);
+                renderTree();
+            });
+
+            document.getElementById('btnViewVertical').addEventListener('click', function() {
+                activeView = 'vertical';
+                updateViewButtons(this);
+                renderTree();
+            });
+
+            document.getElementById('btnViewRadial').addEventListener('click', function() {
+                activeView = 'radial';
+                updateViewButtons(this);
+                renderTree();
+            });
+
+            function updateViewButtons(activeBtn) {
+                [document.getElementById('btnViewHorizontal'), document.getElementById('btnViewVertical'), document.getElementById('btnViewRadial')].forEach(btn => {
+                    btn.className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5";
+                });
+                activeBtn.className = "px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium transition-all flex items-center gap-1.5";
+            }
+
+            document.getElementById('btnCloseInspector').addEventListener('click', () => {
+                document.getElementById('inspectorSidebar').classList.add('translate-x-full');
+            });
+
+            document.getElementById('btnZoomIn').addEventListener('click', () => {
+                svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.3);
+            });
+
+            document.getElementById('btnZoomOut').addEventListener('click', () => {
+                svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
+            });
+
+            document.getElementById('btnFitScreen').addEventListener('click', () => {
+                renderTree();
+            });
+
+            document.getElementById('btnResetZoom').addEventListener('click', () => {
+                renderTree();
+            });
+
+            document.getElementById('btnExpandAll').addEventListener('click', () => {
+                selectedCompanies.clear();
+                selectedTags.clear();
+                searchQuery = '';
+                document.getElementById('searchInput').value = '';
+                renderTree();
+            });
+
+            document.getElementById('btnCollapseAll').addEventListener('click', () => {
+                svg.transition().duration(400).call(zoomBehavior.transform, d3.zoomIdentity.scale(0.5));
+            });
+        });
+    </script>
+</body>
+</html>
