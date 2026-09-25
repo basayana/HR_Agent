@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Benchmarking & Core Capabilities Masterclass</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+    .node-card { transition: all 0.2s ease-in-out; }
+    .node-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid fa-microchip text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-tight">LLM Benchmarking Masterclass</h1>
+          <p class="text-xs text-indigo-400 font-medium">CampusX Session Summary • Interactive Knowledge Flow</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xs px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+          <i class="fa-regular fa-clock text-indigo-400 mr-1.5"></i> 51:20 Duration
+        </span>
+        <a href="https://www.youtube.com/watch?v=qIiU3lyjrhM" target="_blank" class="text-xs px-3 py-1.5 rounded-full bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 border border-indigo-500/40 transition">
+          <i class="fa-brands fa-youtube mr-1.5 text-red-400"></i> Open Video
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- Section 1: Overview & Flow -->
+    <section>
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sitemap text-indigo-400"></i> Architecture of LLM Evaluation
+        </h2>
+        <p class="text-slate-400 text-sm">High-level mapping from raw capabilities to standardized benchmark evaluation pipelines.</p>
+      </div>
+
+      <!-- Interactive Flow Diagram -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+        <!-- Stage 1 -->
+        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 node-card">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-950/80 px-2.5 py-1 rounded border border-indigo-800">Stage 1</span>
+            <i class="fa-solid fa-brain text-slate-500"></i>
+          </div>
+          <h3 class="font-semibold text-white mb-2">Core Capabilities</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Fundamental cognitive and task-based aptitudes evaluated in base/fine-tuned LLMs (Math, Coding, Reasoning, etc.).</p>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="bg-slate-800/80 border border-indigo-500/40 rounded-xl p-5 node-card ring-1 ring-indigo-500/20">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded border border-emerald-800">Stage 2</span>
+            <i class="fa-solid fa-vial text-slate-500"></i>
+          </div>
+          <h3 class="font-semibold text-white mb-2">Benchmark Framework</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Standardized evaluation rigs consisting of Data Sets, Run Configs, Scoring Protocols, and Aggregation Rules.</p>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 node-card">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-950/80 px-2.5 py-1 rounded border border-amber-800">Stage 3</span>
+            <i class="fa-solid fa-triangle-exclamation text-slate-500"></i>
+          </div>
+          <h3 class="font-semibold text-white mb-2">Critical Limitations</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Contamination, Saturation, Non-standard setups, and Selective metric reporting required for real-world validation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Definitions Breakdown -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Definitions & Concepts -->
+      <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-book-bookmark text-indigo-400"></i> Core Definitions
+        </h3>
+        
+        <div class="space-y-4">
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-indigo-300 text-sm mb-1">Standardized Benchmark [00:00:20]</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A standardized, reproducible evaluation framework used to test and score an LLM's performance against predefined datasets and metrics, allowing direct comparisons across different model providers.
+            </p>
+          </div>
+
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-emerald-300 text-sm mb-1">Anatomy of a Benchmark (4 Pillars) [00:01:46]</div>
+            <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li><strong class="text-slate-200">Dataset & Task:</strong> Pairs of Input Questions + Ground Truth Answers (e.g., GSM8K's ~8,000 math problems).</li>
+              <li><strong class="text-slate-200">Run Configuration:</strong> Standardized execution parameters (0-shot vs 5-shot, temperature, system prompts).</li>
+              <li><strong class="text-slate-200">Scoring Protocol:</strong> Automated rules (Exact Match, BLEU/ROUGE, or LLM-as-a-Judge) comparing output to answer key.</li>
+              <li><strong class="text-slate-200">Aggregation Metric:</strong> Summary score computation across all test rows (Accuracy, Average % Accuracy across topics).</li>
+            </ul>
+          </div>
+
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-amber-300 text-sm mb-1">Benchmark Case Study: GSM8K [00:02:46]</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              <strong>Grade School Math 8K:</strong> A benchmark containing ~8,000 multi-step grade-school level math word problems. Designed to test step-by-step quantitative reasoning in LLMs.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical Failures & Caveats -->
+      <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-shield-cat text-rose-400"></i> Why Benchmarks Can Be Misleading [00:49:44]
+        </h3>
+
+        <div class="space-y-4">
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-rose-300 text-sm mb-1">1. Data Contamination</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Occurs when test benchmark datasets leak into the pre-training or fine-tuning datasets of LLMs. The model "memorizes" answers rather than demonstrating true generalized reasoning.
+            </p>
+          </div>
+
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-amber-300 text-sm mb-1">2. Benchmark Saturation</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              When frontier models achieve near 100% accuracy on older benchmarks, making the evaluation incapable of differentiating state-of-the-art capabilities among newer models.
+            </p>
+          </div>
+
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-cyan-300 text-sm mb-1">3. Non-Standardized Setup Variations</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Model providers often alter evaluation configurations (e.g., using custom 5-shot prompts or chain-of-thought tricks) to inflate advertised scores compared to standard setups.
+            </p>
+          </div>
+
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div class="font-bold text-purple-300 text-sm mb-1">4. Selective Score Aggregation [00:49:44]</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Labs reporting overall average scores across broad benchmarks (e.g., MMLU's 57 subjects) while hiding critical weaknesses in specific domains like Economics or Law.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Key Takeaways & Recommendations -->
+    <section class="bg-indigo-950/40 border border-indigo-800/60 rounded-2xl p-6">
+      <h3 class="text-base font-bold text-indigo-200 mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-lightbulb text-amber-400"></i> Practical Takeaway for ML Engineers
+      </h3>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Always take benchmark scores published by model providers <strong>with a pinch of salt [00:50:44]</strong>. Published scores serve as rough initial filters. Before deploying an LLM into production, build <strong>custom evaluation pipelines</strong> with domain-specific datasets tailored directly to your application's actual workflow and edge cases.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 py-6 border-t border-slate-800">
+    Summary structured from CampusX LLM Evals Course • Video Timestamp Citations Attached
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Evaluation & Benchmarking Master Reference</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- MathJax for rendering math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                            950: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        code, pre { font-family: 'Fira Code', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen custom-scrollbar selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Bar Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-white leading-tight">LLM Evaluation & Benchmarking</h1>
+                    <p class="text-xs text-indigo-400 font-medium hidden sm:block">Interactive Master Reference & Documentation Dashboard</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">Print / Save PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- Tab Navigation Bar -->
+        <nav class="flex flex-wrap gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-2xl shadow-inner">
+            <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn active px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-indigo-600 text-white shadow-md">
+                <i class="fa-solid fa-layer-group"></i> <span>1. Lifecycle & Tooling</span>
+            </button>
+            <button onclick="switchTab('code-metrics')" id="tab-btn-code-metrics" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center gap-2">
+                <i class="fa-solid fa-code"></i> <span>2. Code Metrics (pass@k)</span>
+            </button>
+            <button onclick="switchTab('run-config')" id="tab-btn-run-config" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center gap-2">
+                <i class="fa-solid fa-sliders"></i> <span>3. Run Configuration</span>
+            </button>
+            <button onclick="switchTab('quality-dims')" id="tab-btn-quality-dims" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved"></i> <span>4. Quality Dimensions</span>
+            </button>
+            <button onclick="switchTab('benchmarks')" id="tab-btn-benchmarks" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center gap-2">
+                <i class="fa-solid fa-database"></i> <span>5. Benchmarks & Glossary</span>
+            </button>
+        </nav>
+
+        <!-- TAB 1: Lifecycle & Tooling -->
+        <div id="tab-content-overview" class="tab-content space-y-8">
+            <div class="border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-diagram-project text-indigo-400"></i> LLM Evaluation Lifecycle & Core Tooling
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Pre-deployment offline testing vs. post-deployment online production telemetry.</p>
+            </div>
+
+            <!-- Offline vs Online Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Offline Evals Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-slate-700 transition">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition"></div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl">
+                            <i class="fa-solid fa-vial text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Offline Evals (Pre-Deployment)</h3>
+                            <span class="text-xs text-indigo-400 font-mono">Static Test Sets • Regression Prevention</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                        Executed during training, fine-tuning, or prompt engineering phases before releasing a model version to production. Evaluates against standardized ground-truth benchmark datasets.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check-circle text-emerald-400 mt-0.5"></i>
+                            <span><strong>Controlled & Repeatable:</strong> Uses deterministic parameters ($T=0$) for baseline comparison.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check-circle text-emerald-400 mt-0.5"></i>
+                            <span><strong>Key Objective:</strong> Catching hallucination bugs, format failures, and capability regressions early.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Online Evals Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-slate-700 transition">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition"></div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+                            <i class="fa-solid fa-chart-line text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Online Evals (Post-Deployment)</h3>
+                            <span class="text-xs text-emerald-400 font-mono">Continuous Telemetry • Real User Input</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                        Continuous evaluation on live production traffic logs. Captures user interactions, latency spikes, monetary costs, and actual customer feedback.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check-circle text-emerald-400 mt-0.5"></i>
+                            <span><strong>Real-World Drift Detection:</strong> Monitors edge cases and out-of-distribution prompts from real users.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check-circle text-emerald-400 mt-0.5"></i>
+                            <span><strong>Asynchronous Scoring:</strong> Utilizes LLM-as-a-Judge and guardrails asynchronously on sampled logs.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Telemetry & Metrics Breakdown -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+                <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-satellite-dish text-indigo-400"></i> Logging & Telemetry Classification
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4">
+                        <div class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">1. Directly Captured Metrics</div>
+                        <ul class="space-y-2 text-xs text-slate-300">
+                            <li class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                                <span>Input Prompts & System Messages</span>
+                                <span class="font-mono text-slate-400">Raw Text Logs</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                                <span>Token Utilization</span>
+                                <span class="font-mono text-slate-400">Prompt / Completion Tokens</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                                <span>Latency Metrics</span>
+                                <span class="font-mono text-slate-400">TTFT & Total Latency (ms)</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Cost Tracking</span>
+                                <span class="font-mono text-slate-400">$ / Million Tokens</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4">
+                        <div class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-2">2. Computed Metrics (Evaluators)</div>
+                        <ul class="space-y-2 text-xs text-slate-300">
+                            <li class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                                <span>User Explicit Feedback</span>
+                                <span class="font-mono text-slate-400">Thumbs Up/Down, Star Ratings</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                                <span>LLM-as-a-Judge Score</span>
+                                <span class="font-mono text-slate-400">Rubric G-Eval (1-5 Scale)</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                                <span>RAG Faithfulness</span>
+                                <span class="font-mono text-slate-400">Context Claim Overlap</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Safety & Toxicity Refusal</span>
+                                <span class="font-mono text-slate-400">Guardrail Trigger Rate</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Tooling Ecosystem Cards -->
+            <div class="space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-screwdriver-wrench text-indigo-400"></i> Core Evaluation Ecosystem Tooling
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-bold text-white text-sm">LangSmith</span>
+                            <span class="text-[10px] bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded-full font-mono">Observability</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                            Full-stack observability and debugging platform for LLM applications. Provides execution tracing, prompt versioning, dataset curation, and continuous evaluation pipelines.
+                        </p>
+                        <div class="text-[11px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800/60 font-mono">
+                            Best for: Tracing multi-step agent chains & dataset versioning.
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-bold text-white text-sm">DeepEval</span>
+                            <span class="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-full font-mono">Unit Testing</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                            Open-source Pytest-like framework for LLM unit testing. Enables CI/CD test suites for hallucination, answer relevancy, toxic output, and custom metric assertions.
+                        </p>
+                        <div class="text-[11px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800/60 font-mono">
+                            Best for: CI/CD unit testing pipelines before deployment.
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-bold text-white text-sm">Ragas</span>
+                            <span class="text-[10px] bg-purple-950 border border-purple-800 text-purple-300 px-2 py-0.5 rounded-full font-mono">RAG Specialist</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                            Specialized evaluation framework for Retrieval-Augmented Generation (RAG) pipelines. Computes metrics like Faithfulness, Answer Relevance, and Context Precision.
+                        </p>
+                        <div class="text-[11px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800/60 font-mono">
+                            Best for: Quantifying context retrieval & RAG quality.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Code Metrics -->
+        <div id="tab-content-code-metrics" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-code text-emerald-400"></i> Code Generation Metrics: pass@1 vs. pass@k
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Measuring code synthesis accuracy through single-attempt pass rates and multi-candidate combinatorics.</p>
+            </div>
+
+            <!-- Pass@1 vs Pass@k Comparison Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- pass@1 Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+                                <i class="fa-solid fa-play text-lg"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">pass@1 (Pass at 1)</h3>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded-full font-mono">Single-Shot Accuracy</span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Evaluates whether the <strong>very first code candidate</strong> generated by the model passes 100% of the hidden execution unit test cases for a problem.
+                    </p>
+
+                    <!-- Formula Box -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-emerald-300 font-mono text-xs space-y-1">
+                        <div class="text-slate-400 text-[10px] uppercase tracking-wider mb-1">Standard Formula:</div>
+                        <div>\(\text{pass@1} = \frac{\text{Number of Problems Passed on 1st Attempt}}{\text{Total Number of Problems}}\)</div>
+                    </div>
+
+                    <div class="space-y-2 text-xs text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-indigo-400"></i>
+                            <span><strong>Run Config:</strong> Uses Temperature \(T = 0.0\) (Greedy Decoding) for deterministic single-shot testing.</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-laptop-code text-indigo-400"></i>
+                            <span><strong>Primary Use Case:</strong> Copilot / Cursor real-time auto-complete where immediate working code is required.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- pass@k Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                                <i class="fa-solid fa-cubes text-lg"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">pass@k (Pass at k, where k > 1)</h3>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 bg-indigo-950 border border-indigo-800 text-indigo-300 rounded-full font-mono">Probabilistic Upper Bound</span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Generates \(n\) total candidate samples per problem (\(n \ge k\)). Measures the probability that <strong>at least 1 out of \(k\) chosen samples</strong> passes all unit tests.
+                    </p>
+
+                    <!-- Unbiased Estimator Formula Box -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-indigo-300 font-mono text-xs space-y-1">
+                        <div class="text-slate-400 text-[10px] uppercase tracking-wider mb-1">Unbiased Estimator (HumanEval Paper):</div>
+                        <div>\(\text{pass@k} := \mathbb{E}_{\text{problems}} \left[ 1 - \frac{\binom{n - c}{k}}{\binom{n}{k}} \right]\)</div>
+                        <div class="text-[10px] text-slate-500 mt-1">Where \(n\) = total generated samples, \(c\) = number of passing samples (\(c \le n\)).</div>
+                    </div>
+
+                    <div class="space-y-2 text-xs text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-indigo-400"></i>
+                            <span><strong>Run Config:</strong> Requires high diversity sampling (\(T = 0.7 - 0.8\), Top-\(p = 0.95\)).</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                            <span><strong>Primary Use Case:</strong> Problem-solving upper bounds with reranking, majority voting, or automated test filters.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Pass@k Estimator Tool -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-indigo-400"></i> Interactive pass@k Estimator Calculator
+                </h3>
+                <p class="text-xs text-slate-400">Test the unbiased pass@k formula by adjusting total samples (\(n\)), correct passing samples (\(c\)), and subset evaluation size (\(k\)).</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Total Samples Generated (\(n\))</label>
+                        <input type="number" id="calc-n" value="100" min="1" max="200" oninput="calculatePassK()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Passing Samples (\(c\))</label>
+                        <input type="number" id="calc-c" value="15" min="0" max="200" oninput="calculatePassK()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Subset Size (\(k\))</label>
+                        <input type="number" id="calc-k" value="10" min="1" max="100" oninput="calculatePassK()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                    <div class="text-xs text-slate-400">
+                        Computed probability of picking at least 1 working solution in \(k\) tries:
+                    </div>
+                    <div id="pass-k-result" class="text-2xl font-bold font-mono text-emerald-400">
+                        --%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Run Configuration -->
+        <div id="tab-content-run-config" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i> Evaluation Hyperparameters & Run Configuration
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Standardizing execution parameters to guarantee benchmark reproducibility and comparability.</p>
+            </div>
+
+            <!-- Grid of Hyperparameters -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Temperature Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                            <i class="fa-solid fa-temperature-half text-lg"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white">Temperature (\(T\))</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Controls output probability distribution flatness during token sampling.
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400">
+                        <li class="border-l-2 border-emerald-500 pl-2">
+                            <strong class="text-slate-200">\(T = 0.0\) (Greedy Decoding):</strong> Picks top probability token. Essential for deterministic offline benchmarks (MMLU, pass@1).
+                        </li>
+                        <li class="border-l-2 border-indigo-500 pl-2">
+                            <strong class="text-slate-200">\(T = 0.7 - 0.8\) (Creative / Diverse):</strong> Increases generation entropy. Required for pass@100 evaluation to explore diverse solutions.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Top-p Nucleus Sampling Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                            <i class="fa-solid fa-filter text-lg"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white">Top-p (Nucleus Sampling)</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Truncates sampling pool to the smallest set of tokens whose cumulative probability sum exceeds threshold \(p\).
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400">
+                        <li class="border-l-2 border-indigo-500 pl-2">
+                            <strong class="text-slate-200">Top-p = 0.95:</strong> Filters out the tail-end 5% lowest-probability improbable tokens, preventing nonsensical generations while retaining output variety.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Few-Shot Prompting Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                            <i class="fa-solid fa-list-check text-lg"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white">Few-Shot Prompting (\(k\)-shot)</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Determines how many solved exemplar pairs are included in the evaluation context prior to the question query.
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400">
+                        <li class="border-l-2 border-indigo-500 pl-2">
+                            <strong class="text-slate-200">0-shot:</strong> Direct question answering without examples. Tests raw instruction adherence.
+                        </li>
+                        <li class="border-l-2 border-indigo-500 pl-2">
+                            <strong class="text-slate-200">5-shot:</strong> Supplies 5 solved examples (e.g., standard MMLU baseline config).
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- System Prompts Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                            <i class="fa-solid fa-terminal text-lg"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white">System Prompt Standardization</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Defines model role, constraints, and step-by-step reasoning instructions (Chain-of-Thought / CoT).
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400">
+                        <li class="border-l-2 border-amber-500 pl-2">
+                            <strong class="text-slate-200">Impact:</strong> Changing punctuation or whitespace in system prompts can alter benchmark scores by up to 5–10%. Must be held constant across runs.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Quality Dimensions -->
+        <div id="tab-content-quality-dims" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i> Quality Dimensions & Alignment Measurements
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Multi-dimensional evaluation criteria for safety, truthfulness, and operational performance.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Truthfulness -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2 hover:border-slate-700 transition">
+                    <div class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> Truthfulness
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Evaluates whether generated outputs correspond to real-world factual ground truth without inventing unverified facts.
+                    </p>
+                    <div class="text-[11px] text-slate-400 font-mono pt-1">Benchmark: SimpleQA, TruthfulQA</div>
+                </div>
+
+                <!-- Faithfulness -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2 hover:border-slate-700 transition">
+                    <div class="text-indigo-400 font-bold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-file-shield"></i> Faithfulness (RAG Context)
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Measures whether output assertions are strictly grounded in retrieved context documents without extrapolating outside facts.
+                    </p>
+                    <div class="text-[11px] text-slate-400 font-mono pt-1">Framework: Ragas Context Precision</div>
+                </div>
+
+                <!-- Helpfulness -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2 hover:border-slate-700 transition">
+                    <div class="text-amber-400 font-bold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-heart"></i> Helpfulness & Instruction
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Assesses how accurately the model satisfies complex prompt constraints, format rules (JSON schema), and task requirements.
+                    </p>
+                    <div class="text-[11px] text-slate-400 font-mono pt-1">Evaluation: IFEval / G-Eval Rubric</div>
+                </div>
+
+                <!-- Harmlessness & Toxicity -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2 hover:border-slate-700 transition">
+                    <div class="text-rose-400 font-bold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield"></i> Harmlessness & Refusal
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Measures safety guardrail robustness against toxic outputs, hate speech, cyberattack instructions, and illegal prompts.
+                    </p>
+                    <div class="text-[11px] text-slate-400 font-mono pt-1">Framework: HarmBench / Red Teaming</div>
+                </div>
+
+                <!-- Calibration & Confidence -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2 hover:border-slate-700 transition">
+                    <div class="text-purple-400 font-bold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye"></i> Calibration & Confidence (ECE)
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Determines whether a model's self-reported certainty probability matches its true accuracy rate (Expected Calibration Error).
+                    </p>
+                    <div class="text-[11px] text-slate-400 font-mono pt-1">Metric: Expected Calibration Error</div>
+                </div>
+
+                <!-- Robustness -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2 hover:border-slate-700 transition">
+                    <div class="text-cyan-400 font-bold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-dumbbell"></i> Robustness & Perturbation
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Measures output consistency when prompts undergo minor typographical errors, rephrasing, or adversarial formatting shifts.
+                    </p>
+                    <div class="text-[11px] text-slate-400 font-mono pt-1">Method: Adversarial Perturbation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: Benchmarks & Glossary -->
+        <div id="tab-content-benchmarks" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-database text-indigo-400"></i> LLM Benchmarks & Abbreviations Master Matrix
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Searchable matrix of academic benchmarks, dataset properties, and standard industry terminology.</p>
+                </div>
+                
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                    <input type="text" id="benchmark-search" onkeyup="filterBenchmarkTable()" placeholder="Search benchmarks..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Benchmark Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs" id="benchmark-table">
+                        <thead class="bg-slate-950 border-b border-slate-800 text-slate-300 font-semibold uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4">Benchmark Name</th>
+                                <th class="p-4">Target Capability</th>
+                                <th class="p-4">Dataset Format</th>
+                                <th class="p-4">Key Significance</th>
+                                <th class="p-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800 text-slate-300">
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">MMLU</td>
+                                <td class="p-4">General World Knowledge</td>
+                                <td class="p-4">14k MCQs (4 options, 57 subjects)</td>
+                                <td class="p-4">Historical standard for broad subject matter accuracy across STEM, humanities, and social sciences.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-amber-950 border border-amber-800 text-amber-300 rounded-full font-mono text-[10px]">Saturated</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">MMLU-Pro</td>
+                                <td class="p-4">Reasoning & Knowledge</td>
+                                <td class="p-4">12k Hard MCQs (10 options)</td>
+                                <td class="p-4">Created to eliminate guessing on MMLU by expanding options to 10 and requiring multi-step reasoning.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded-full font-mono text-[10px]">Active</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">GPQA</td>
+                                <td class="p-4">PhD Expert Domain QA</td>
+                                <td class="p-4">448 PhD-Level Questions</td>
+                                <td class="p-4">Google-proof questions in Physics, Bio, Chem written by experts. Highly non-trivial for non-experts.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded-full font-mono text-[10px]">Active</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">HLE</td>
+                                <td class="p-4">Frontier Reasoning</td>
+                                <td class="p-4">~3k Multidisciplinary Questions</td>
+                                <td class="p-4">Humanity's Last Exam: Next-gen benchmark designed for frontier reasoning models (o1/o3, Gemini 2.5).</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-purple-950 border border-purple-800 text-purple-300 rounded-full font-mono text-[10px]">Frontier</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">GSM8K</td>
+                                <td class="p-4">Grade School Quantitative</td>
+                                <td class="p-4">8,500 Math Word Problems</td>
+                                <td class="p-4">Multi-step basic arithmetic reasoning dataset used to test introductory quantitative chain-of-thought.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-amber-950 border border-amber-800 text-amber-300 rounded-full font-mono text-[10px]">Near Saturation</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">MBPP / HumanEval</td>
+                                <td class="p-4">Python Code Synthesis</td>
+                                <td class="p-4">164 / 980 Code Problems + Unit Tests</td>
+                                <td class="p-4">Evaluates code generation via pass@1 execution checks against functional test suites.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-full font-mono text-[10px]">Near Saturation</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">SimpleQA</td>
+                                <td class="p-4">Factual Calibration</td>
+                                <td class="p-4">4,350 Fact Verification Queries</td>
+                                <td class="p-4">Measures factual accuracy vs hallucinated answers vs model willingness to abstain when uncertain.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded-full font-mono text-[10px]">Active</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-4 font-bold text-indigo-300">ARC</td>
+                                <td class="p-4">Visual Spatial Logic</td>
+                                <td class="p-4">Grid Transformation Visual Puzzles</td>
+                                <td class="p-4">Abstraction & Reasoning Corpus: Evaluates out-of-distribution general fluid intelligence without text memorization.</td>
+                                <td class="p-4"><span class="px-2.5 py-0.5 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded-full font-mono text-[10px]">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Abbreviations Glossary Table -->
+            <div class="space-y-4 pt-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-indigo-400"></i> Abbreviations & Industry Glossary
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">MMLU</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Benchmark</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Massive Multitask Language Understanding</div>
+                        <p class="text-[11px] text-slate-400">Multi-subject general knowledge testing suite.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">GPQA</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Benchmark</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Google-Proof Question Answering</div>
+                        <p class="text-[11px] text-slate-400">PhD-level biology, chemistry, and physics reasoning dataset.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">HLE</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Benchmark</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Humanity's Last Exam</div>
+                        <p class="text-[11px] text-slate-400">Frontier multi-modal evaluation suite for top-tier reasoning models.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">GSM8K</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Benchmark</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Grade School Math 8K</div>
+                        <p class="text-[11px] text-slate-400">8,500 elementary math multi-step reasoning problems.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">MBPP</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Benchmark</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Mostly Basic Python Problems</div>
+                        <p class="text-[11px] text-slate-400">Python programming code synthesis evaluation suite.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">ARC</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Benchmark</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Abstraction & Reasoning Corpus</div>
+                        <p class="text-[11px] text-slate-400">Non-text visual grid pattern abstraction puzzle benchmark.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">RAG</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Architecture</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Retrieval-Augmented Generation</div>
+                        <p class="text-[11px] text-slate-400">Augmenting prompt context with external vector search results.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">ECE</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Metric</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Expected Calibration Error</div>
+                        <p class="text-[11px] text-slate-400">Measures gap between model probability scores and real accuracy.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-indigo-300 text-xs">BLEU / ROUGE</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Metric</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">Bilingual Eval Understudy / Recall-Oriented Understudy</div>
+                        <p class="text-[11px] text-slate-400">Traditional n-gram precision/recall text matching metrics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic for Tabs, Search, and Combinatorics Calculator -->
+    <script>
+        // Tab Switcher
+        function switchTab(tabId) {
+            // Hide all tab content sections
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(el => el.classList.add('hidden'));
+
+            // Remove active classes from buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-400');
+            });
+
+            // Show target content
+            const targetContent = document.getElementById('tab-content-' + tabId);
+            if (targetContent) {
+                targetContent.classList.remove('hidden');
+            }
+
+            // Highlight target button
+            const targetBtn = document.getElementById('tab-btn-' + tabId);
+            if (targetBtn) {
+                targetBtn.classList.remove('text-slate-400');
+                targetBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+            }
+
+            // Trigger MathJax re-render if available
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // Combinatorial Combination helper function nCr
+        function combinations(n, r) {
+            if (r < 0 || r > n) return 0;
+            if (r === 0 || r === n) return 1;
+            if (r === 1) return n;
+            
+            let res = 1;
+            for (let i = 1; i <= r; i++) {
+                res = res * (n - i + 1) / i;
+            }
+            return res;
+        }
+
+        // Pass@k Calculation Logic
+        function calculatePassK() {
+            const n = parseInt(document.getElementById('calc-n').value) || 100;
+            const c = parseInt(document.getElementById('calc-c').value) || 0;
+            const k = parseInt(document.getElementById('calc-k').value) || 10;
+            const resultDisplay = document.getElementById('pass-k-result');
+
+            if (c > n) {
+                resultDisplay.innerText = "Error (c > n)";
+                resultDisplay.className = "text-xl font-bold font-mono text-rose-400";
+                return;
+            }
+
+            if (k > n) {
+                resultDisplay.innerText = "Error (k > n)";
+                resultDisplay.className = "text-xl font-bold font-mono text-rose-400";
+                return;
+            }
+
+            // Unbiased estimator: 1 - [ C(n - c, k) / C(n, k) ]
+            const numCombos = combinations(n - c, k);
+            const denCombos = combinations(n, k);
+
+            let passK = 0;
+            if (denCombos > 0) {
+                passK = 1 - (numCombos / denCombos);
+            }
+
+            const percentage = (passK * 100).toFixed(2);
+            resultDisplay.innerText = `${percentage}%`;
+            resultDisplay.className = "text-2xl font-bold font-mono text-emerald-400";
+        }
+
+        // Filter Benchmark Table
+        function filterBenchmarkTable() {
+            const input = document.getElementById('benchmark-search');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('benchmark-table');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                const tdText = tr[i].innerText.toLowerCase();
+                if (tdText.includes(filter)) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        // Initialize calculator on page load
+        window.onload = function() {
+            calculatePassK();
+        };
+    </script>
+</body>
+</html>
