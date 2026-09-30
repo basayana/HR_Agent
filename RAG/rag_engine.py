@@ -36,29 +36,44 @@ class HRAgentEngine:
         self.index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context)
         self.query_engine = self.index.as_query_engine(similarity_top_k=3)
 
-    def ask_question(self, query):
-        """Processes the full RAG workflow and returns a clean dictionary object."""
-        # 1. Retrieval Phase
+    def retrieve(self, query, similarity_top_k=3):
+        """Retrieve the most relevant policy nodes without generating an answer."""
         start_retrieve = time.time()
-        retriever = self.index.as_retriever(similarity_top_k=3)
+        retriever = self.index.as_retriever(similarity_top_k=similarity_top_k)
         retrieved_nodes = retriever.retrieve(query)
         t_retrieve = time.time() - start_retrieve
 
-        # 2. Generation Phase
+        return {
+            "nodes": retrieved_nodes,
+            "retrieval_time": t_retrieve,
+        }
+
+    def generate(self, query, retrieved_nodes):
+        """Generate an answer from previously retrieved nodes, without retrieving again."""
         start_generate = time.time()
         response = self.query_engine.synthesize(query, nodes=retrieved_nodes)
         t_generate = time.time() - start_generate
 
-        # 3. Token Analytics Phase (Only calculate if Groq backend is active)
         token_metrics = None
         if self.use_groq:
             token_metrics = update_and_calculate_tokens(response, query, retrieved_nodes)
 
-        # Package data into a highly structured interface-agnostic object
         return {
             "answer": str(response),
-            "retrieval_time": t_retrieve,
             "generation_time": t_generate,
-            "total_time": t_retrieve + t_generate,
-            "token_metrics": token_metrics
+            "token_metrics": token_metrics,
+        }
+
+    def ask_question(self, query):
+        """Run retrieval and generation and return the combined pipeline result."""
+        retrieval = self.retrieve(query)
+        generation = self.generate(query, retrieval["nodes"])
+
+        # Package data into a highly structured interface-agnostic object
+        return {
+            "answer": generation["answer"],
+            "retrieval_time": retrieval["retrieval_time"],
+            "generation_time": generation["generation_time"],
+            "total_time": retrieval["retrieval_time"] + generation["generation_time"],
+            "token_metrics": generation["token_metrics"],
         }
