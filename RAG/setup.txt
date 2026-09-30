@@ -4,4 +4,6 @@
 3. install libs for LlamaIndex, the Ollama integration components, and ChromaDB
     pip install llama-index llama-index-llms-ollama llama-index-embeddings-ollama chromadb llama-index-vector-stores-chroma
 4. If we want to run in groq, which requires API key and llm is in cloud, this will be faster.
-    pip install llama-index-llms-groq
+    pip install llama-index-llms-groq 
+    pip install llama-index-embeddings-nomic
+
