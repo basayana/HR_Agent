@@ -1,0 +1,7 @@
+1. download ollama from https://ollama.com/download/
+2. download model - run below command in ur cmd
+    ollama run llama3.1:8b
+3. install libs for LlamaIndex, the Ollama integration components, and ChromaDB
+    pip install llama-index llama-index-llms-ollama llama-index-embeddings-ollama chromadb llama-index-vector-stores-chroma
+4. If we want to run in groq, which requires API key and llm is in cloud, this will be faster.
+    pip install llama-index-llms-groq
