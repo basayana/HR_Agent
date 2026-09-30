@@ -1,4 +1,22 @@
 import os
+import sys
+from pathlib import Path
+
+# Streamlit apps need to be launched by Streamlit so its script runner can
+# provide the ScriptRunContext used by st.session_state, caching, and widgets.
+# Keep `python query_agent_web.py` convenient by handing off to Streamlit.
+if __name__ == "__main__" and "streamlit" not in sys.modules:
+    os.execv(
+        sys.executable,
+        [
+            sys.executable,
+            "-m",
+            "streamlit",
+            "run",
+            str(Path(__file__).resolve()),
+        ],
+    )
+
 import streamlit as st
 from rag_engine import HRAgentEngine
 
@@ -31,6 +49,25 @@ else:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "token_metrics" not in st.session_state:
+    st.session_state.token_metrics = None
+
+st.sidebar.divider()
+st.sidebar.subheader("Token usage")
+token_usage = st.sidebar.empty()
+
+def show_token_usage(metrics):
+    if not metrics:
+        token_usage.caption("Token usage will appear after the first query.")
+        return
+    token_usage.table([
+        {"Metric": "Current question", "Tokens": metrics["current_total"]},
+        {"Metric": "Used today", "Tokens": metrics["today_cumulative"]},
+        {"Metric": "Remaining today", "Tokens": metrics["today_remaining"]},
+    ])
+
+show_token_usage(st.session_state.token_metrics)
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -48,12 +85,5 @@ if user_query := st.chat_input("Ask an HR policy query..."):
             st.markdown(result["answer"])
             st.session_state.messages.append({"role": "assistant", "content": result["answer"]})
             
-            st.markdown("---")
-            st.caption(f"⏱️ **Total latency pipeline runtime:** {result['total_time']:.2f} seconds (Retrieval: {result['retrieval_time']:.2f}s | Generation: {result['generation_time']:.2f}s)")
-            
-            if result["token_metrics"]:
-                m = result["token_metrics"]
-                col1, col2, col3 = st.columns(3)
-                col1.metric("Current Question", f"{m['current_total']} tkn")
-                col2.metric("Used Today", f"{m['today_cumulative']} tkn")
-                col3.metric("Remaining Today", f"{m['today_remaining']} tkn")
+            st.session_state.token_metrics = result.get("token_metrics")
+            show_token_usage(st.session_state.token_metrics)
