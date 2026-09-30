@@ -6,4 +6,5 @@
 4. If we want to run in groq, which requires API key and llm is in cloud, this will be faster.
     pip install llama-index-llms-groq 
     pip install llama-index-embeddings-nomic
-
+5. Just for UI feel, we can install
+    pip install streamlit

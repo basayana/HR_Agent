@@ -1,0 +1,3 @@
+.\venv\Scripts\activate
+python .\query_agent_cli.py -- for cli
+streamlit run .\query_agent_web.py - for Web
