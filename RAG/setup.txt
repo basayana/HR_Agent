@@ -8,3 +8,6 @@
     pip install llama-index-embeddings-nomic
 5. Just for UI feel, we can install
     pip install streamlit
+
+6. for evaluation of RAG retrivaer, install deepeval and pandas
+    pip install deepeval pandas groq

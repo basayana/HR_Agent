@@ -15,3 +15,8 @@ HOW RAG is created?
         how many chunks to pickup is configured as similarity_top_k=3 in retriever.
         (if answer is in 5 chunks, we may miss it, but more chunks will eatup tokens)
     4. once we get context, we send it to LLM Model along with question.
+
+    5. Creating golden data for retrival.
+        used codex , gave prompt to generate goldendata for testing retrival.
+    6. run the test_retrieval.py, this also needs LLM , which should act as LLM as a jurge.
+        pip install groq
