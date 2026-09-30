@@ -1,3 +1,4 @@
-.\venv\Scripts\activate
-python .\query_agent_cli.py -- for cli
-python .\query_agent_web.py - for Web (starts Streamlit and opens the browser)
+.\.venv\Scripts\activate 
+python .\RAG\Create_chroma_db.py - to create vector db
+python .\RAG\query_agent_cli.py -- for cli
+python .\RAG\query_agent_web.py - for Web (starts Streamlit and opens the browser)

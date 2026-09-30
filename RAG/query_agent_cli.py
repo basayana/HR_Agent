@@ -1,7 +1,14 @@
 import os
+import sys
 from rag_engine import HRAgentEngine
 
 def main():
+    # Windows consoles may default to cp1252, which cannot print the UI symbols below.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8", errors="replace")
+
     print("==============================================")
     print("      💼 HR Agent Setup Configurator 💼       ")
     print("==============================================")

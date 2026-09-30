@@ -17,7 +17,10 @@ def main():
     Settings.chunk_overlap = 50
 
     # 2. Set up the local ChromaDB storage path
-    db_path = os.path.join(os.getcwd(), "chroma_db")
+    # Resolve paths relative to this script so running it from the repository
+    # root or from RAG produces the same database location.
+    rag_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(rag_dir, "chroma_db")
     db = chromadb.PersistentClient(path=db_path)
     chroma_collection = db.get_or_create_collection("hr_markdown_documents")
     
@@ -26,7 +29,7 @@ def main():
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
     # 4. Read your Markdown (.md) documents
-    data_path = os.path.join(os.getcwd(), "data/md")
+    data_path = os.path.join(rag_dir, "data", "md")
     print(f"Reading Markdown files from: {data_path}")
     
     # SimpleDirectoryReader automatically detects and processes .md files natively
@@ -49,14 +52,6 @@ def main():
     query_engine = index.as_query_engine()
     
     print("\n--- HR Agent RAG System Ready ---")
-    while True:
-        query = input("\nAsk the HR Agent a question (or type 'exit' to quit): ")
-        if query.lower() == 'exit':
-            break
-        
-        print("Searching local ChromaDB and generating response...")
-        response = query_engine.query(query)
-        print(f"\nResponse:\n{response}")
 
 if __name__ == "__main__":
     # Pulls the embedding model automatically if you haven't downloaded it yet

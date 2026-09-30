@@ -24,7 +24,10 @@ class HRAgentEngine:
         Settings.embed_model = OllamaEmbedding(model_name="nomic-embed-text")
 
         # Load Database
-        db_path = os.path.join(os.getcwd(), "chroma_db")
+        # Resolve the database relative to this module so launching from the
+        # repository root (or any other working directory) uses RAG/chroma_db.
+        rag_dir = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(rag_dir, "chroma_db")
         if not os.path.exists(db_path):
             raise FileNotFoundError(f"ChromaDB not found at {db_path}. Please build the DB first.")
             

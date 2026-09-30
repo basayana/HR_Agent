@@ -1,2 +1,21 @@
 scikit-learn>=1.4,<2.0
 openai>=1.0,<2.0
+
+# --- Vector Store & Database ---
+chromadb
+
+# --- LlamaIndex & Integrations ---
+llama-index
+llama-index-llms-ollama
+llama-index-embeddings-ollama
+llama-index-vector-stores-chroma
+llama-index-llms-groq
+llama-index-embeddings-nomic
+
+# --- User Interface ---
+streamlit
+
+# --- Evaluation & Data Analysis ---
+deepeval
+pandas
+groq
