@@ -1,0 +1,17 @@
+HOW RAG is created?
+    1. ollama is installed which can host opensource LLMs in Local.
+    2. RAG/Create_chroma_db.py will pickup .md files (HR Policy files) and creates chroma_db,
+        which creates vector db.
+        we are using nomic-embed-text model, which is a special model for creating vector DB.
+        llama3.1:8b is not required to create vector db.
+        (from llama_index.core.llms.mock import MockLLM
+        infact Settings.llm = MockLLM()                ---------     can be used in place of 
+        Settings.llm = Ollama(model="llama3.1:8b", request_timeout=120.0).)
+    3. in rag_engine.py , in the retrieval phase, again we utilize nomic-embed-text model, 
+        to convert vectors to get context.
+        context consistes of chunks, which were defined like in Create_chroma_db.py
+            Settings.chunk_size = 512
+            Settings.chunk_overlap = 50
+        how many chunks to pickup is configured as similarity_top_k=3 in retriever.
+        (if answer is in 5 chunks, we may miss it, but more chunks will eatup tokens)
+    4. once we get context, we send it to LLM Model along with question.
