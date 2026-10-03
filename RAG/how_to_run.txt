@@ -1,4 +1,9 @@
-.\.venv\Scripts\activate 
+.\.venv\Scripts\activate
+phoenix serve - this is for observability. open http://localhost:6006/
+
+C:\Anantha\AI_Project\freellmapi>  npm run dev - To start Freellmapi (http://localhost:5173/)
 python .\RAG\Create_chroma_db.py - to create vector db
 python .\RAG\query_agent_cli.py -- for cli
 python .\RAG\query_agent_web.py - for Web (starts Streamlit and opens the browser)
+python .\RAG\test_retrieval.py
+ollama serve  - if required

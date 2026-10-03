@@ -12,6 +12,10 @@ llama-index-vector-stores-chroma
 llama-index-llms-groq
 llama-index-embeddings-nomic
 
+# --- LlamaIndex tracing with Arize Phoenix ---
+arize-phoenix
+openinference-instrumentation-llama-index
+
 # --- User Interface ---
 streamlit
 
@@ -19,3 +23,7 @@ streamlit
 deepeval
 pandas
 groq
+
+# --- AI Tracing & Observability ---
+arize-phoenix
+openinference-instrumentation-llama-index

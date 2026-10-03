@@ -1,4 +1,4 @@
-"""Evaluate retrieval with DeepEval contextual precision and recall.
+"""Evaluate retrieval with DeepEval contextual precision and recall using FreeLLMAPI.
 
 Run from this directory with: python test_retrieval.py
 Optionally set the number of retrieved nodes: python test_retrieval.py --top-k 5
@@ -9,32 +9,35 @@ import json
 import os
 import asyncio
 from pathlib import Path
-
+from deepeval.evaluate import AsyncConfig
 import pandas as pd
+from deepeval import evaluate
 from deepeval.metrics import ContextualPrecisionMetric, ContextualRecallMetric
 from deepeval.models import DeepEvalBaseLLM
 from deepeval.test_case import LLMTestCase
 from pydantic import BaseModel
-from groq import Groq
+from openai import OpenAI  # Use standard OpenAI client to communicate with your proxy base URL
 
 from rag_engine import HRAgentEngine
 
 
-class GroqJudge(DeepEvalBaseLLM):
-    """Use Groq's hosted API as DeepEval's LLM judge."""
+class FreeLLMAPIJudge(DeepEvalBaseLLM):
+    """Use FreeLLMAPI's local proxy endpoint as DeepEval's LLM judge."""
 
-    def __init__(self, model="qwen/qwen3.8-27b"):
-        api_key = os.environ.get("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY environment variable is not configured.")
+    def __init__(self, model="auto"):
+        # Pull API credentials mirroring your running HRAgentEngine configurations
+        api_key = os.environ.get("FREELLMAPI_API_KEY", "freellmapi-e198ca14b4b28e505d50662534e3c8de8a0d590a7344ed47")
+        api_base = os.environ.get("FREELLMAPI_BASE_URL", "http://localhost:3001/v1")
+        
         self.model = model
-        self.client = Groq(api_key=api_key)
+        # Configure standard OpenAI client wrapper targeting local proxy endpoints
+        self.client = OpenAI(api_key=api_key, base_url=api_base)
 
     def load_model(self):
         return self.client
 
     def get_model_name(self):
-        return f"Groq {self.model}"
+        return f"FreeLLMAPI {self.model}"
 
     def generate(self, prompt: str, schema: BaseModel = None):
         # Format the user instruction block cleanly for JSON schemas
@@ -63,7 +66,7 @@ class GroqJudge(DeepEvalBaseLLM):
             
         response = self.load_model().chat.completions.create(**request)
         
-        # ⚡ FIX 1: Safely index the choice array from the live network response stream
+        # Safely index the choice array from the live network response stream
         output = response.choices[0].message.content or ""
         
         if schema is None:
@@ -116,40 +119,37 @@ def main():
                      + ", ".join(missing_evidence))
 
     engine = HRAgentEngine()
-    judge = GroqJudge()
+    # Instantiate custom evaluation judge routing traffic through your proxy container
+    judge = FreeLLMAPIJudge()
     precision_metric = ContextualPrecisionMetric(model=judge)
     recall_metric = ContextualRecallMetric(model=judge)
     rows = []
+    test_cases = []
+    scored_case_ids = []
 
     print(f"Golden set: {args.golden_file}")
     print(f"Retrieving top {args.top_k} nodes per query\n")
 
     for case in cases:
-        # Fetch actual answer context
-        retrieved = engine.ask_question(case["query"])
-        
-        # Extract source matching context nodes cleanly for evaluation
-        if hasattr(engine, "index"):
-            retrieved_raw = engine.index.as_retriever(similarity_top_k=args.top_k).retrieve(case["query"])
-            contexts = [node_text(node) for node in retrieved_raw]
-        else:
-            contexts = []
+        # Retrieve once and reuse these nodes for both evaluation and synthesis.
+        retrieval = engine.retrieve(case["query"], similarity_top_k=args.top_k)
+        retrieved_nodes = retrieval["nodes"]
+        contexts = [node_text(node) for node in retrieved_nodes]
 
         relevant_documents = case.get("relevant_documents", [])
 
         if relevant_documents:
+            generated = engine.generate(case["query"], retrieved_nodes)
             test_case = LLMTestCase(
                 input=case["query"],
-                actual_output=retrieved.get("answer", ""),
+                actual_output=generated.get("answer", ""),
                 expected_output=case["evidence"],
                 retrieval_context=contexts,
             )
-            precision_metric.measure(test_case)
-            recall_metric.measure(test_case)
-            precision = precision_metric.score
-            recall = recall_metric.score
-            p_reason = precision_metric.reason or ""
-            r_reason = recall_metric.reason or ""
+            test_cases.append(test_case)
+            scored_case_ids.append(case.get("id", ""))
+            precision = recall = None
+            p_reason = r_reason = ""
         else:
             precision = recall = None
             p_reason = r_reason = ""
@@ -162,11 +162,39 @@ def main():
             "precision_reason": p_reason,
             "recall_reason": r_reason,
         })
-        if precision is None:
+    print(f"Processed {len(rows)} test cases, {len(test_cases)} in-scope for evaluation.\n")
+    if test_cases:
+        
+
+        # Configure the execution pacing parameters
+        async_config = AsyncConfig(
+            run_async=True,       # Keeps async processing active
+            max_concurrent=10,    # Limits maximum parallel test cases to 10 at any given time
+            throttle_value=2      # Introduces a 2-second sleep delay between case starts to prevent API rate limits
+        )
+        evaluation = evaluate(
+            test_cases=test_cases,
+            metrics=[precision_metric, recall_metric],
+            async_config=async_config,
+        )
+        rows_by_id = {row["id"]: row for row in rows}
+        for case_id, test_result in zip(scored_case_ids, evaluation.test_results):
+            row = rows_by_id[case_id]
+            for metric_data in test_result.metrics_data or []:
+                metric_name = metric_data.name.lower()
+                if "precision" in metric_name:
+                    row["precision"] = metric_data.score
+                    row["precision_reason"] = metric_data.reason or ""
+                elif "recall" in metric_name:
+                    row["recall"] = metric_data.score
+                    row["recall_reason"] = metric_data.reason or ""
+
+    for row in rows:
+        if row["precision"] is None:
             status = "N/A (no reference evidence)"
         else:
-            status = f"P={precision:.1%} R={recall:.1%}"
-        print(f"{case.get('id', 'unknown')}: {status}")
+            status = f"P={row['precision']:.1%} R={row['recall']:.1%}"
+        print(f"{row['id'] or 'unknown'}: {status}")
 
     results = pd.DataFrame(rows)
     scored = results.dropna(subset=["precision", "recall"])

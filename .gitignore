@@ -9,3 +9,6 @@ __pycache__/
 venv/
 .venv/
 RAG/chroma_db/
+.deepeval/
+groq_token_count.txt
+README.md

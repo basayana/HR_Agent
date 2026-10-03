@@ -17,12 +17,12 @@ def main():
     print("2. Groq Cloud (openai/gpt-oss-20b)")
     
     choice = input("\nEnter choice (1 or 2): ").strip()
-    use_groq = (choice == "2")
+    use_api = (choice == "2")
     
     try:
         # Spin up core RAG pipeline object
-        agent = HRAgentEngine(use_groq=use_groq)
-        mode_label = "⚡ Groq Cloud Active ⚡" if use_groq else "🤖 Local Ollama Active 🤖"
+        agent = HRAgentEngine(use_api=use_api)
+        mode_label = "⚡ Groq Cloud Active ⚡" if use_api else "🤖 Local Ollama Active 🤖"
         print(f"\n==============================================\n   {mode_label}\n==============================================")
     except Exception as e:
         print(f"\n❌ Initialization Failed: {e}")

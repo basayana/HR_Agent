@@ -29,17 +29,17 @@ engine_mode = st.sidebar.selectbox(
     "Select Backend Engine Target:",
     ["Groq Cloud (Blazing Fast)", "Local Ollama (llama3.1:8b)"]
 )
-use_groq = (engine_mode == "Groq Cloud (Blazing Fast)")
+use_api = (engine_mode == "Groq Cloud (Blazing Fast)")
 
 @st.cache_resource
-def get_cached_agent(use_groq):
+def get_cached_agent(use_api):
     """Caches engine objects so swapping selector inputs handles memory resets beautifully."""
     try:
-        return HRAgentEngine(use_groq=use_groq), None
+        return HRAgentEngine(use_api=use_api), None
     except Exception as e:
         return None, str(e)
 
-agent, err = get_cached_agent(use_groq)
+agent, err = get_cached_agent(use_api)
 if err:
     st.error(f"Initialization Exception: {err}")
     st.stop()

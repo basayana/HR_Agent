@@ -11,3 +11,5 @@
 
 6. for evaluation of RAG retrivaer, install deepeval and pandas
     pip install deepeval pandas groq
+7. if we want to use google models
+    pip install llama-index-llms-google-genai

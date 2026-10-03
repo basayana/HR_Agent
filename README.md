@@ -28,3 +28,11 @@ Type `quit` or `exit` to end the session.
 ## Policies
 
 The policies are individual `.txt` files in `policies/`. Add or edit those files to change the agent's knowledge base; restart the CLI after making changes. You can select another policy directory with `--policies PATH`.
+
+## RAG tracing
+
+The LlamaIndex RAG app sends traces to Arize Phoenix by default. Install the
+dependencies from `requirements.txt`, start Phoenix with `phoenix serve`, then
+run the RAG CLI or Streamlit app. Open <http://localhost:6006> to inspect
+traces. Setup, cloud configuration, and the disable switch are documented in
+[RAG/observability/README.md](RAG/observability/README.md).
